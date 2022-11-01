@@ -1,0 +1,62 @@
+---
+title: "DfT Road Statistics Quick analysis"
+author: "Juan P. Fonseca-Zamora"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading the libraries
+
+```{r, warning=FALSE, message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(dftTrafficCounts)
+```
+
+## Loading the data
+
+Data is loaded from the DfT repository
+
+```{r, warning=FALSE, message=FALSE}
+url = "https://storage.googleapis.com/dft-statistics/road-traffic/downloads/data-gov-uk/dft_traffic_counts_aadf.zip"
+Roads = dtc_import(u = url)
+```
+
+Extracting a subset for the last couple of years
+
+```{r}
+Recent_data = Roads |> filter(Year>2017)
+```
+
+## Quick stats
+
+Number of sites per year by type of site
+
+```{r, echo=FALSE}
+Recent_data |>
+  select(Count_point_id,Year,Road_type) |>
+  ggplot(aes(x=factor(Road_type),fill=Road_type))+
+  geom_bar()+facet_grid(.~Year)
+```
+
+How many years of data per site:
+
+```{r}
+per_year = Recent_data |> 
+  group_by(Count_point_id) |>
+  summarise(n_years=n()) 
+
+```
+
+```{r, echo=FALSE}
+Recent_data |>
+  select(Count_point_id,Year,Road_type) |>
+  left_join(per_year,by="Count_point_id") |> 
+  #mutate(one_year=ifelse(is.na(one_year),FALSE,one_year)) |> 
+  ggplot(aes(x=factor(Road_type),fill=factor(n_years)))+
+  geom_bar()+facet_grid(.~Year)
+
+```
