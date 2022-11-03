@@ -14,6 +14,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(ggplot2)
 library(dftTrafficCounts)
+library(tmap)
+library(sf)
+library(tmaptools)
 ```
 
 ## Loading the data
@@ -60,3 +63,15 @@ Recent_data |>
   geom_bar()+facet_grid(.~Year)
 
 ```
+## Last year's data for Leeds
+```{r}
+count_points=Recent_data |>
+  filter(Year==2021,Local_authority_id==63) |>
+  st_as_sf(coords=c("Longitude","Latitude"),crs="wgs84")
+
+OSM_base = read_osm(count_points, ext=1.1)
+tm_shape(OSM_base)+tm_rgb()+
+tm_shape(count_points)+tm_dots(col="All_motor_vehicles",alpha=0.5,size = 1,palette = "viridis")
+```
+
+
